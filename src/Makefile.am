@@ -115,6 +115,7 @@ BITCOIN_CORE_H = \
   net_processing.h \
   netaddress.h \
   netbase.h \
+  txMempoolSync.h\
   netmessagemaker.h \
   noui.h \
   policy/feerate.h \
@@ -218,6 +219,7 @@ libbitcoin_server_a_SOURCES = \
   script/sigcache.cpp \
   script/ismine.cpp \
   timedata.cpp \
+  txMempoolSync.cpp\
   torcontrol.cpp \
   txdb.cpp \
   txmempool.cpp \

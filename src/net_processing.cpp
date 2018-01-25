@@ -1539,7 +1539,27 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
     }
 
-    else if (strCommand == NetMsgType::VERSION)
+    else if(strCommand == NetMsgType::TXMEMPOOLSYNC && !fImporting && !fReindex) {
+        //Niave Sync protocol
+        /**
+         * 1. Lock threads
+         * 2. Access mempool with boot_multi_index<ancestor_score> and save them in a vInv
+         * 3. generate a messge with msgMaker
+         * send message with ForEachNode function
+         */
+
+        //TODO: implement this lol
+        std::vector <CInv> vInv = generateVInv();
+
+        //create the inv messahe
+
+        //For one peer, send the message
+
+        //ForEachNode, send the inv message
+
+    }
+
+        else if (strCommand == NetMsgType::VERSION)
     {
         // Each connection can only send one version message
         if (pfrom->nVersion != 0)
