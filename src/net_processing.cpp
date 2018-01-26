@@ -1493,6 +1493,11 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
 
 bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const CChainParams& chainparams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
 {
+
+    //LOGFILE
+    //logFile(strCommand, "incomingMessages.txt");
+
+
     LogPrint(BCLog::NET, "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->GetId());
     if (gArgs.IsArgSet("-dropmessagestest") && GetRand(gArgs.GetArg("-dropmessagestest", 0)) == 0)
     {
@@ -1549,6 +1554,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
          */
 
         //TODO: implement this lol
+        LOCK(cs_main); //doing it here instead of txmempoolsync because not sure where to get cs_main from
+
         std::vector <CInv> vInv = generateVInv();
 
         //create the inv messahe
@@ -2433,6 +2440,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                     MarkBlockAsReceived(pindex->GetBlockHash()); // Reset in-flight state in case of whitelist
                     Misbehaving(pfrom->GetId(), 100);
                     LogPrintf("Peer %d sent us invalid compact block\n", pfrom->GetId());
+                    logFile("INVALID - invalid cmcpctblock recvied, IGNORE LAST BLOCK");
                     return true;
                 } else if (status == READ_STATUS_FAILED) {
                     // Duplicate txindexes, the block is now in-flight, so just request it
@@ -2442,18 +2450,27 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                     return true;
                 }
 
+                //LOGFILE: logging a cmpctblock coming in, use this and the normalblock logfile call to see
+                //ratio of cmpctblock to normalblock
+                logFile("cmpctblock", "blockType.txt");
+
+                //if we get here that means its a valid cmpctblock
+                int inc = logFile(cmpctblock); //logging compact block
+
                 BlockTransactionsRequest req;
                 for (size_t i = 0; i < cmpctblock.BlockTxCount(); i++) {
                     if (!partialBlock.IsTxAvailable(i))
                         req.indexes.push_back(i);
                 }
                 if (req.indexes.empty()) {
+                    logFile("SUCCESSCMPCT - no missing transactions for cmpctblock #" + std::to_string(inc));
                     // Dirty hack to jump to BLOCKTXN code (TODO: move message handling into their own functions)
                     BlockTransactions txn;
                     txn.blockhash = cmpctblock.header.GetHash();
                     blockTxnMsg << txn;
                     fProcessBLOCKTXN = true;
                 } else {
+                    logFile(req, inc);
                     req.blockhash = pindex->GetBlockHash();
                     connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::GETBLOCKTXN, req));
                 }
@@ -2567,6 +2584,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 std::vector<CInv> invs;
                 invs.push_back(CInv(MSG_BLOCK | GetFetchFlags(pfrom), resp.blockhash));
                 connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::GETDATA, invs));
+                logFile("TXNFILLFAIL - blocktxn message recived but unsuccessful, now preforming getdata RT\'s");
             } else {
                 // Block is either okay, or possibly we received
                 // READ_STATUS_CHECKBLOCK_FAILED.
@@ -2593,6 +2611,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 // the header only; we should not punish peers if the block turns
                 // out to be invalid.
                 mapBlockSource.emplace(resp.blockhash, std::make_pair(pfrom->GetId(), false));
+                logFile("TXNFILLSUCCESS - blocktxn message recived and successfully filled missing TXN");
             }
         } // Don't hold cs_main when we call into ProcessNewBlock
         if (fBlockRead) {
@@ -2641,6 +2660,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
     else if (strCommand == NetMsgType::BLOCK && !fImporting && !fReindex) // Ignore blocks received while importing
     {
+
+        //LOGFILE: logging a normal block coming in
+        logFile("normalblock", "blockType.txt");
+
         std::shared_ptr<CBlock> pblock = std::make_shared<CBlock>();
         vRecv >> *pblock;
 
@@ -2981,9 +3004,13 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
 
     // Process message
     bool fRet = false;
+    static int counter = 0;
     try
     {
-        fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
+        counter++;
+
+        if(counter%5000 == 0) fRet = ProcessMessage(pfrom, NetMsgType::TXMEMPOOLSYNC, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
+        else fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
         if (interruptMsgProc)
             return false;
         if (!pfrom->vRecvGetData.empty())

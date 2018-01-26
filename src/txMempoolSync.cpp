@@ -12,6 +12,8 @@ indexed_transaction_set syncTxIndex;
 int txToSync = 4000;
 
 std::vector<CInv> generateVInv(){
+
+    //LOCK(cs_main); //would need to create the cs_main object first, calling this in the net_processing.cpp code
     std::vector<CInv> vInv;
     MPiter it = syncTxIndex.get<ancestor_score>().begin();
 
