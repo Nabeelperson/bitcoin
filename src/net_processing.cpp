@@ -1544,29 +1544,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
     }
 
-    else if(strCommand == NetMsgType::TXMEMPOOLSYNC && !fImporting && !fReindex) {
-        //Niave Sync protocol
-        /**
-         * 1. Lock threads
-         * 2. Access mempool with boot_multi_index<ancestor_score> and save them in a vInv
-         * 3. generate a messge with msgMaker
-         * send message with ForEachNode function
-         */
-
-        //TODO: implement this lol
-        LOCK(cs_main); //doing it here instead of txmempoolsync because not sure where to get cs_main from
-
-        std::vector <CInv> vInv = generateVInv();
-
-        //create the inv messahe
-
-        //For one peer, send the message
-
-        //ForEachNode, send the inv message
-
-    }
-
-        else if (strCommand == NetMsgType::VERSION)
+    else if (strCommand == NetMsgType::VERSION)
     {
         // Each connection can only send one version message
         if (pfrom->nVersion != 0)
@@ -2321,6 +2299,28 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
     }
 
+    else if(strCommand == NetMsgType::TXMEMPOOLSYNC && !fImporting && !fReindex) {
+        //Niave Sync protocol
+        /**
+         * 1. Lock threads
+         * 2. Access mempool with boot_multi_index<ancestor_score> and save them in a vInv
+         * 3. generate a messge with msgMaker
+         * send message with ForEachNode function
+         */
+
+        //TODO: implement this lol
+        LOCK(cs_main); //doing it here instead of txmempoolsync because not sure where to get cs_main from
+
+        std::vector <CInv> vInv = generateVInv();
+
+        //create the inv messahe
+
+        //For one peer, send the message
+
+        //ForEachNode, send the inv message
+
+    }
+
 
     else if (strCommand == NetMsgType::CMPCTBLOCK && !fImporting && !fReindex) // Ignore blocks received while importing
     {
@@ -3009,8 +3009,14 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
     {
         counter++;
 
-        if(counter%5000 == 0) fRet = ProcessMessage(pfrom, NetMsgType::TXMEMPOOLSYNC, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
+        if(counter%2500 == 0) {
+            logFile("TRIGGER");
+            fRet = ProcessMessage(pfrom, NetMsgType::TXMEMPOOLSYNC, vRecv, msg.nTime, chainparams, connman,
+                                  interruptMsgProc);
+            logFile("ENDTRIG");
+        }
         else fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
+//        fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
         if (interruptMsgProc)
             return false;
         if (!pfrom->vRecvGetData.empty())
