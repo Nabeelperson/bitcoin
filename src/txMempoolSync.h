@@ -8,7 +8,7 @@
 #include "boost/multi_index/ordered_index.hpp"
 #include "boost/multi_index/hashed_index.hpp"
 #include <boost/multi_index/sequenced_index.hpp>
-//#include "logFile.h"
+#include "logFile.h"
 //#include "net_processing.h"
 #include "netmessagemaker.h"
 #include "txmempool.h"

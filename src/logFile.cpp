@@ -28,6 +28,7 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
     static int inc = 0; //file incremment
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode001.txt";
+    else fileName = directory + fileName;
     string compactBlock = directory + to_string(inc) + "_cmpctblock.txt";
     vector<uint64_t> txid;
     ofstream fnOut;
@@ -64,6 +65,7 @@ void logFile(BlockTransactionsRequest &req, int inc,string fileName)
     string directory = "/home/node001/.bitcoin/expLogFiles/";
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode001.txt";
+    else fileName = directory + fileName;
     string reqFile = directory + to_string(inc) + "_getblocktxn.txt";
     vector<uint64_t> txid;
     ofstream fnOut;
@@ -119,18 +121,28 @@ void logFile(string info, string fileName)
 
 void logFile(vector<CInv> vInv, string fileName)
 {
+    static int count = 0;
     string directory = "/home/node001/.bitcoin/expLogFiles/";
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode001.txt";
     else fileName = directory + fileName;
+    string vecFile = directory + to_string(count) + "_vecFile.txt";
     ofstream fnOut;
+    ofstream fnVec;
     fnOut.open(fileName,ofstream::app);
+    fnVec.open(vecFile, ofstream::out);
 
-    fnOut << timeString << endl; //Thu Aug 10 11:31:32 2017\n is printed
+
+    fnOut << timeString << "VECGEN --- gemerated vector of tx to sync" << endl; //Thu Aug 10 11:31:32 2017\n is printed
+    fnVec << timeString << to_string(count) << endl;
 
     for(int  ii = 0; ii < vInv.size(); ii++)
     {
-        fnOut << vInv[ii].ToString() << endl; //protocol.* file contains CInc class
+        fnVec << vInv[ii].ToString() << endl; //protocol.* file contains CInc class
     }
 
+    fnOut << timeString << "VECSAVED --- saved file of tx vector: " << vecFile << endl;
+
+    fnOut.close();
+    fnVec.close();
 }

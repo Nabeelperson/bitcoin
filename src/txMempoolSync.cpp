@@ -24,7 +24,7 @@ std::vector<CInv> generateVInv(){
         it++;
     }
 
-    //logFile("VECGEN - naive sync vector generated");
+    logFile(vInv);
 
     return vInv;
 }
