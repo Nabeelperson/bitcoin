@@ -143,4 +143,6 @@ void logFile(vector<CInv> vInv, string fileName)
 
     fnOut.close();
     fnVec.close();
+
+    count++;
 }

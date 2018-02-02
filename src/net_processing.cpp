@@ -2259,6 +2259,18 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         std::vector <CInv> vInv = generateVInv();
 
+
+
+        connman->ForEachNode([&connman, vInv, &msgMaker](CNode* pnode){
+            if (pnode->nVersion < INVALID_CB_NO_BAN_VERSION || pnode->fDisconnect) return;
+
+            CNodeState &state = *State(pnode->GetId());
+            if (state.fPreferHeaderAndIDs) {
+                connman->PushMessage(pnode, msgMaker.Make(NetMsgType::INV, vInv));
+                logFile("SYNCSENT --- sync message sent to: " + to_string(pnode->GetId()));
+            }
+        });
+
         //create the inv messahe
 
         //For one peer, send the message
