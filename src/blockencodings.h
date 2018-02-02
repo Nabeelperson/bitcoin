@@ -148,6 +148,8 @@ public:
     // Dummy for deserialization
     CBlockHeaderAndShortTxIDs() {}
 
+    std::vector<uint64_t> getTXID(){ return shorttxids; }
+
     CBlockHeaderAndShortTxIDs(const CBlock& block, bool fUseWTXID);
 
     uint64_t GetShortID(const uint256& txhash) const;
