@@ -119,7 +119,7 @@ void logFile(string info, string fileName)
 
 void logFile(vector<CInv> vInv, string fileName)
 {
-	logFile("Inside logger");
+	//logFile("Inside logger");
     static int count = 0;
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode001.txt";

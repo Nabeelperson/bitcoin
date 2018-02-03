@@ -2253,8 +2253,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
          * send message with ForEachNode function
          */
 
-    	logFile("Inside case");
-        //TODO: implement this lol
+    	//logFile("Inside case");
         LOCK(cs_main); //doing it here instead of txmempoolsync because not sure where to get cs_main from
 
         std::vector <CInv> vInv = generateVInv();
@@ -2263,12 +2262,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         connman->ForEachNode([&connman, vInv, &msgMaker](CNode* pnode){
             if (pnode->nVersion < INVALID_CB_NO_BAN_VERSION || pnode->fDisconnect) return;
-
-            CNodeState &state = *State(pnode->GetId());
-            if (state.fPreferHeaderAndIDs) {
                 connman->PushMessage(pnode, msgMaker.Make(NetMsgType::INV, vInv));
                 logFile("SYNCSENT --- sync message sent to: " + to_string(pnode->GetId()));
-            }
         });
 
         //create the inv messahe
@@ -2968,10 +2963,10 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
         counter++;
 
         if(counter%2500 == 0) {
-            logFile("TRIGGER");
+            logFile("TRIGGER --- starting sync");
             fRet = ProcessMessage(pfrom, NetMsgType::TXMEMPOOLSYNC, vRecv, msg.nTime, chainparams, connman,
                                   interruptMsgProc);
-            logFile("ENDTRIG");
+            logFile("ENDTRIG --- sync ended");
         }
         fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
         if (interruptMsgProc)
