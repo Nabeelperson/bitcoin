@@ -8,7 +8,8 @@
 using namespace std;
 
 bool debug = false;
-const static string directory = "/home/node001/.bitcoin/expLogFiles/";
+const static string nodeID = "003";
+const static string directory = "/home/node" + nodeID + "/.bitcoin/expLogFiles/";
 
 string createTimeStamp()
 {
@@ -27,7 +28,7 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
 {
     static int inc = 0; //file incremment
     string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode001.txt";
+    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
     else fileName = directory + fileName;
     string compactBlock = directory + to_string(inc) + "_cmpctblock.txt";
     vector<uint64_t> txid;
@@ -63,7 +64,7 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
 void logFile(BlockTransactionsRequest &req, int inc,string fileName)
 {
     string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode001.txt";
+    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
     else fileName = directory + fileName;
     string reqFile = directory + to_string(inc) + "_getblocktxn.txt";
     vector<uint64_t> txid;
@@ -99,7 +100,7 @@ void logFile(BlockTransactionsRequest &req, int inc,string fileName)
 void logFile(string info, string fileName)
 {
     string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode001.txt";
+    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
     else fileName = directory + fileName;
     ofstream fnOut;
     fnOut.open(fileName,ofstream::app);
@@ -119,10 +120,10 @@ void logFile(string info, string fileName)
 
 void logFile(vector<CInv> vInv, string fileName)
 {
-	//logFile("Inside logger");
+    //logFile("Inside logger");
     static int count = 0;
     string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode001.txt";
+    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
     else fileName = directory + fileName;
     string vecFile = directory + to_string(count) + "_vecFile.txt";
     ofstream fnOut;

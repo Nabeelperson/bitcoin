@@ -15,7 +15,7 @@ int mintxsync = 1000;
 
 std::vector<CInv> generateVInv(){
 
-	//logFile("Inside function");
+    //logFile("Inside function");
     LOCK(cs_main); //would need to create the cs_main object first, calling this in the net_processing.cpp code
     std::vector<CInv> vInv;
     MPiter it = mempool.mapTx.get<ancestor_score>().begin();
