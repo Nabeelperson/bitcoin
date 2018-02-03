@@ -9,7 +9,7 @@ using namespace std;
 
 bool debug = false;
 const static string nodeID = "003";
-const static string directory = "/home/node" + nodeID + "/.bitcoin/expLogFiles/";
+const static string directory = "/home/an4s/.bitcoin/expLogFiles/";
 
 string createTimeStamp()
 {
@@ -41,7 +41,7 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
     fnOut << timeString << "CMPCTRECIVED - compact block recived" << endl;
     txid = Cblock.getTXID();
 
-    for(int i = 0; i < txid.size(); i++)
+    for(unsigned int i = 0; i < txid.size(); i++)
     {
         fnCmpct << txid[i] << endl;
     }
@@ -78,7 +78,7 @@ void logFile(BlockTransactionsRequest &req, int inc,string fileName)
     fnOut << timeString << "REQSENT - cmpctblock #" << inc << " is missing " << req.indexes.size() << " tx"<< endl;
 
     fnReq << timeString << "indexes requested for missing tx from cmpctblock #" << inc << endl;
-    for(int i = 0; i < req.indexes.size(); i++)
+    for(unsigned int i = 0; i < req.indexes.size(); i++)
     {
         fnReq << req.indexes[i] << endl;
     }
@@ -99,6 +99,11 @@ void logFile(BlockTransactionsRequest &req, int inc,string fileName)
 
 void logFile(string info, string fileName)
 {
+	if(info == "mempool")
+	{
+		dumpMemPool(fileName);
+		return;
+	}
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
     else fileName = directory + fileName;
@@ -132,10 +137,10 @@ void logFile(vector<CInv> vInv, string fileName)
     fnVec.open(vecFile, ofstream::out);
 
 
-    fnOut << timeString << "VECGEN --- gemerated vector of tx to sync" << endl; //Thu Aug 10 11:31:32 2017\n is printed
+    fnOut << timeString << "VECGEN --- generated vector of tx to sync" << endl; //Thu Aug 10 11:31:32 2017\n is printed
     fnVec << timeString << to_string(count) << endl;
 
-    for(int  ii = 0; ii < vInv.size(); ii++)
+    for(unsigned int  ii = 0; ii < vInv.size(); ii++)
     {
         fnVec << vInv[ii].ToString() << endl; //protocol.* file contains CInc class
     }
@@ -146,4 +151,25 @@ void logFile(vector<CInv> vInv, string fileName)
     fnVec.close();
 
     count++;
+}
+
+void dumpMemPool(string fileName)
+{
+	static int count = 0;
+	string timeString = createTimeStamp();
+	if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
+	else fileName = directory + fileName;
+	string mempoolFile = directory + to_string(count) + "_mempoolFile.txt";
+	string sysCmd;
+	ofstream fnOut;
+	fnOut.open(fileName,ofstream::app);
+
+	fnOut << timeString << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << endl;
+	sysCmd = "bitcoin-cli getmempoolinfo > " + mempoolFile;
+	(void)system(sysCmd.c_str());
+	sysCmd = "bitcoin-cli getrawmempool >> " + mempoolFile;
+	(void)system(sysCmd.c_str());
+
+	fnOut.close();
+	count++;
 }

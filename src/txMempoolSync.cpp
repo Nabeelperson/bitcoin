@@ -10,7 +10,7 @@
 //using namepsace std;
 
 indexed_transaction_set syncTxIndex;
-int mintxsync = 1000;
+const int mintxsync = 1000;
 
 
 std::vector<CInv> generateVInv(){
@@ -19,11 +19,12 @@ std::vector<CInv> generateVInv(){
     LOCK(cs_main); //would need to create the cs_main object first, calling this in the net_processing.cpp code
     std::vector<CInv> vInv;
     MPiter it = mempool.mapTx.get<ancestor_score>().begin();
-    int txToSync = mempool.mapTx.get<ancestor_score>().size() * 0.1;
+    int txInMemPool = mempool.mapTx.get<ancestor_score>().size();
+    int txToSync = txInMemPool * 0.1;
 
     if(mintxsync > txToSync) txToSync = mintxsync;
 
-    logFile("TXCOUNT --- tx in mempool: " + to_string(txToSync * 10 + 1) + " --- tx sync count: " + to_string(txToSync));
+    logFile("TXCOUNT --- tx in mempool: " + to_string(txInMemPool) + " --- tx sync count: " + to_string(txToSync));
     for(int ii = 0; ii < txToSync; ii++)
     {
     	//logFile("..." + to_string(ii));
@@ -43,6 +44,7 @@ std::vector<CInv> generateVInv(){
         //logFile("......iterator incremented");
     }
     //logFile("Exiting loop");
+    logFile("mempool");
     logFile(vInv);
 
     return vInv;

@@ -20,5 +20,6 @@ void logFile(string info, string fileName = ""); //logging a simple statement wi
 int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName = "");//info from cmpctBlock
 void logFile(BlockTransactionsRequest &req, int inc, string fileName = ""); //info from getblocktxn
 void logFile(vector <CInv> vInv, string fileName = "" );
+void dumpMemPool(string fileName = "");
 
 #endif
