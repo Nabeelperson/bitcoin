@@ -22,7 +22,8 @@ std::vector<CInv> generateVInv(){
     int txInMemPool = mempool.mapTx.get<ancestor_score>().size();
     int txToSync = txInMemPool * 0.1;
 
-    if(mintxsync > txToSync) txToSync = mintxsync;
+    if(txInMemPool < mintxsync) txToSync = txInMemPool;
+    else if(mintxsync > txToSync) txToSync = mintxsync;
 
     logFile("TXCOUNT --- tx in mempool: " + to_string(txInMemPool) + " --- tx sync count: " + to_string(txToSync));
     for(int ii = 0; ii < txToSync; ii++)
