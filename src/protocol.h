@@ -241,6 +241,10 @@ extern const char *GETBLOCKTXN;
  */
 extern const char *BLOCKTXN;
 
+/**
+ * Request for prioritized synchronization of transaction in mempool with other
+ * nodes
+ */
 extern const char *TXMEMPOOLSYNC;
 };
 

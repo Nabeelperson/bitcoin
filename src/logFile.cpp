@@ -2,9 +2,9 @@
 //compact blocks, getblocktxn, and blocktxn messages on a bitcoin node
 //Soft forks created by two blocks coming in are also recorded
 
-
 #include "logFile.h"
 
+// TODO: remove use of namespace in future
 using namespace std;
 
 bool debug = false;
@@ -17,7 +17,7 @@ string createTimeStamp()
     struct tm* timeStamp;
     string timeString;
 
-    time(&currTime); //returns secnds since epoch
+    time(&currTime); //returns seconds since epoch
     timeStamp = localtime(&currTime); //converts seconds to tm struct
     timeString = asctime(timeStamp); //converts tm struct to readable timestamp string
     timeString.back() = ' '; //replaces newline with space character
@@ -26,7 +26,7 @@ string createTimeStamp()
 
 int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
 {
-    static int inc = 0; //file incremment
+    static int inc = 0; //file increment
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
     else fileName = directory + fileName;
@@ -96,7 +96,6 @@ void logFile(BlockTransactionsRequest &req, int inc,string fileName)
     fnReq.close();
 }
 
-
 void logFile(string info, string fileName)
 {
 	if(info == "mempool")
@@ -122,10 +121,8 @@ void logFile(string info, string fileName)
     fnOut.close();
 }
 
-
 void logFile(vector<CInv> vInv, string fileName)
 {
-    //logFile("Inside logger");
     static int count = 0;
     string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
@@ -137,7 +134,7 @@ void logFile(vector<CInv> vInv, string fileName)
     fnVec.open(vecFile, ofstream::out);
 
 
-    fnOut << timeString << "VECGEN --- generated vector of tx to sync" << endl; //Thu Aug 10 11:31:32 2017\n is printed
+    fnOut << timeString << "VECGEN --- generated vector of tx to sync" << endl;
     fnVec << timeString << to_string(count) << endl;
 
     for(unsigned int  ii = 0; ii < vInv.size(); ii++)

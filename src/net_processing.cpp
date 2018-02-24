@@ -2250,28 +2250,18 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
          * 1. Lock threads
          * 2. Access mempool with boot_multi_index<ancestor_score> and save them in a vInv
          * 3. generate a messge with msgMaker
-         * send message with ForEachNode function
+         * 4. send message with ForEachNode function
          */
 
-    	//logFile("Inside case");
-        LOCK(cs_main); //doing it here instead of txmempoolsync because not sure where to get cs_main from
-
+        // get a vector of transaction messages to synchronize
         std::vector <CInv> vInv = generateVInv();
 
-
-
+        // send list of transactions to peers
         connman->ForEachNode([&connman, vInv, &msgMaker](CNode* pnode){
             if (pnode->nVersion < INVALID_CB_NO_BAN_VERSION || pnode->fDisconnect) return;
                 connman->PushMessage(pnode, msgMaker.Make(NetMsgType::INV, vInv));
                 logFile("SYNCSENT --- sync message sent to: " + to_string(pnode->GetId()));
         });
-
-        //create the inv messahe
-
-        //For one peer, send the message
-
-        //ForEachNode, send the inv message
-
     }
 
 
@@ -2957,16 +2947,19 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
 
     // Process message
     bool fRet = false;
+    // counter to hold number of messages that have been received so far
     static int counter = 0;
     try
     {
+        // after a certain number of messages are received, invoke mempool sync
+        // protocol
         counter++;
-
-        if(counter%2500 == 0) {
+        if(counter % 2500 == 0) {
             logFile("TRIGGER --- starting sync");
             fRet = ProcessMessage(pfrom, NetMsgType::TXMEMPOOLSYNC, vRecv, msg.nTime, chainparams, connman,
                                   interruptMsgProc);
             logFile("ENDTRIG --- sync ended");
+            counter = 0;
         }
         fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
         if (interruptMsgProc)

@@ -9,7 +9,6 @@
 #include "boost/multi_index/hashed_index.hpp"
 #include <boost/multi_index/sequenced_index.hpp>
 #include "logFile.h"
-//#include "net_processing.h"
 #include "netmessagemaker.h"
 #include "txmempool.h"
 #include "net.h"
@@ -19,7 +18,6 @@
 #include <string>
 #include <ctime>
 #include <vector>
-
 
 //Copied over from txmempool.h line 451
 //Included all the indexes for testing later to see which ones is the best to use
@@ -49,14 +47,7 @@ typedef boost::multi_index_container<
         >
 > indexed_transaction_set;
 
-
 typedef indexed_transaction_set::index<ancestor_score>::type::iterator MPiter; //indexer for ancestor_score
-
-
-
-
 std::vector<CInv> generateVInv();
-
-
 
 #endif //BITCOIN_TXMEMPOOLSYNC_H

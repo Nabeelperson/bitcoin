@@ -13,11 +13,10 @@
 
 using namespace std;
 
-
-
+// function prototypes for different logging functions
 string createTimeStamp();
 void logFile(string info, string fileName = ""); //logging a simple statement with timestamp
-int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName = "");//info from cmpctBlock
+int  logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName = "");//info from cmpctBlock
 void logFile(BlockTransactionsRequest &req, int inc, string fileName = ""); //info from getblocktxn
 void logFile(vector <CInv> vInv, string fileName = "" );
 void dumpMemPool(string fileName = "");
