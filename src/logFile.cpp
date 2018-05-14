@@ -4,18 +4,18 @@
 
 #include "logFile.h"
 
-// TODO: remove use of namespace in future
-using namespace std;
-
 bool debug = false;
-const static string nodeID = "003";
-const static string directory = "/home/an4s/.bitcoin/expLogFiles/";
+//const static std::string nodeID = "003";
+//const static std::string directory = "/home/an4s/.bitcoin/expLogFiles/";
+Env env;
+const static std::string nodeID = env.getUserName();
+const static std::string directory = "/home/" + env.getUserName() + "/.bitcoin/expLogFiles/";
 
-string createTimeStamp()
+std::string createTimeStamp()
 {
     time_t currTime;
     struct tm* timeStamp;
-    string timeString;
+    std::string timeString;
 
     time(&currTime); //returns seconds since epoch
     timeStamp = localtime(&currTime); //converts seconds to tm struct
@@ -24,34 +24,34 @@ string createTimeStamp()
     return timeString + ": ";
 }
 
-int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
+int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName)
 {
     static int inc = 0; //file increment
-    string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
+    std::string timeString = createTimeStamp();
+    if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
     else fileName = directory + fileName;
-    string compactBlock = directory + to_string(inc) + "_cmpctblock.txt";
-    vector<uint64_t> txid;
-    ofstream fnOut;
-    ofstream fnCmpct;
+    std::string compactBlock = directory + std::to_string(inc) + "_cmpctblock.txt";
+    std::vector<uint64_t> txid;
+    std::ofstream fnOut;
+    std::ofstream fnCmpct;
 
-    fnOut.open(fileName, ofstream::app);
-    fnCmpct.open(compactBlock, ofstream::out);
+    fnOut.open(fileName, std::ofstream::app);
+    fnCmpct.open(compactBlock, std::ofstream::out);
 
-    fnOut << timeString << "CMPCTRECIVED - compact block recived" << endl;
+    fnOut << timeString << "CMPCTRECIVED - compact block recived" << std::endl;
     txid = Cblock.getTXID();
 
     for(unsigned int i = 0; i < txid.size(); i++)
     {
-        fnCmpct << txid[i] << endl;
+        fnCmpct << txid[i] << std::endl;
     }
 
-    fnOut << createTimeStamp() << "CMPCTSAVED - " << compactBlock << " file created" << endl;
+    fnOut << createTimeStamp() << "CMPCTSAVED - " << compactBlock << " file created" << std::endl;
 
     if(debug){
-        cout << "inc: " << inc << endl;
-        cout << "fileName: " << fileName << " --- cmpctblock file: " << compactBlock << endl;
-        cout << timeString << "CMPCTRECIVED - compact block recived" << endl;
+        std::cout << "inc: " << inc << std::endl;
+        std::cout << "fileName: " << fileName << " --- cmpctblock file: " << compactBlock << std::endl;
+        std::cout << timeString << "CMPCTRECIVED - compact block recived" << std::endl;
     }
 
     inc++;
@@ -61,34 +61,34 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, string fileName)
     return inc - 1;
 }
 
-void logFile(BlockTransactionsRequest &req, int inc,string fileName)
+void logFile(BlockTransactionsRequest &req, int inc,std::string fileName)
 {
-    string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
+    std::string timeString = createTimeStamp();
+    if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
     else fileName = directory + fileName;
-    string reqFile = directory + to_string(inc) + "_getblocktxn.txt";
-    vector<uint64_t> txid;
-    ofstream fnOut;
-    ofstream fnReq;
+    std::string reqFile = directory + std::to_string(inc) + "_getblocktxn.txt";
+    std::vector<uint64_t> txid;
+    std::ofstream fnOut;
+    std::ofstream fnReq;
 
-    fnOut.open(fileName, ofstream::app);
-    fnReq.open(reqFile, ofstream::out);
+    fnOut.open(fileName, std::ofstream::app);
+    fnReq.open(reqFile, std::ofstream::out);
 
-    fnOut << timeString << "FAILCMPCT - getblocktxn message sent for cmpctblock #" << inc << endl;
-    fnOut << timeString << "REQSENT - cmpctblock #" << inc << " is missing " << req.indexes.size() << " tx"<< endl;
+    fnOut << timeString << "FAILCMPCT - getblocktxn message sent for cmpctblock #" << inc << std::endl;
+    fnOut << timeString << "REQSENT - cmpctblock #" << inc << " is missing " << req.indexes.size() << " tx"<< std::endl;
 
-    fnReq << timeString << "indexes requested for missing tx from cmpctblock #" << inc << endl;
+    fnReq << timeString << "indexes requested for missing tx from cmpctblock #" << inc << std::endl;
     for(unsigned int i = 0; i < req.indexes.size(); i++)
     {
-        fnReq << req.indexes[i] << endl;
+        fnReq << req.indexes[i] << std::endl;
     }
 
-    fnOut << timeString << "REQSAVED -  " << reqFile << " file created" << endl;
+    fnOut << timeString << "REQSAVED -  " << reqFile << " file created" << std::endl;
 
     if(debug){
-        cout << "logFile for block req called" << endl;
-        cout << "filename: " << fileName << " --- reqFile: " << reqFile << endl;
-        cout << timeString << "REQSAVED -  " << reqFile << " file created" << endl;
+        std::cout << "logFile for block req called" << std::endl;
+        std::cout << "filename: " << fileName << " --- reqFile: " << reqFile << std::endl;
+        std::cout << timeString << "REQSAVED -  " << reqFile << " file created" << std::endl;
     }
 
 
@@ -96,53 +96,53 @@ void logFile(BlockTransactionsRequest &req, int inc,string fileName)
     fnReq.close();
 }
 
-void logFile(string info, string fileName)
+void logFile(std::string info, std::string fileName)
 {
 	if(info == "mempool")
 	{
 		dumpMemPool(fileName);
 		return;
 	}
-    string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
+    std::string timeString = createTimeStamp();
+    if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
     else fileName = directory + fileName;
-    ofstream fnOut;
-    fnOut.open(fileName,ofstream::app);
+    std::ofstream fnOut;
+    fnOut.open(fileName,std::ofstream::app);
 
-    fnOut << timeString << info << endl; //Thu Aug 10 11:31:32 2017\n is printed
+    fnOut << timeString << info << std::endl; //Thu Aug 10 11:31:32 2017\n is printed
 
     if(debug){
-        if(!fnOut.is_open()) cout << "fnOut failed" << endl;
-        cout << "logfile for string " << endl;
-        cout << "fileName:" << fileName << endl;
-        cout << timeString << info << endl;
+        if(!fnOut.is_open()) std::cout << "fnOut failed" << std::endl;
+        std::cout << "logfile for std::string " << std::endl;
+        std::cout << "fileName:" << fileName << std::endl;
+        std::cout << timeString << info << std::endl;
     }
 
     fnOut.close();
 }
 
-void logFile(vector<CInv> vInv, string fileName)
+void logFile(std::vector<CInv> vInv, std::string fileName)
 {
     static int count = 0;
-    string timeString = createTimeStamp();
-    if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
+    std::string timeString = createTimeStamp();
+    if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
     else fileName = directory + fileName;
-    string vecFile = directory + to_string(count) + "_vecFile.txt";
-    ofstream fnOut;
-    ofstream fnVec;
-    fnOut.open(fileName,ofstream::app);
-    fnVec.open(vecFile, ofstream::out);
+    std::string vecFile = directory + std::to_string(count) + "_vecFile.txt";
+    std::ofstream fnOut;
+    std::ofstream fnVec;
+    fnOut.open(fileName,std::ofstream::app);
+    fnVec.open(vecFile, std::ofstream::out);
 
 
-    fnOut << timeString << "VECGEN --- generated vector of tx to sync" << endl;
-    fnVec << timeString << to_string(count) << endl;
+    fnOut << timeString << "VECGEN --- generated std::vector of tx to sync" << std::endl;
+    fnVec << timeString << std::to_string(count) << std::endl;
 
     for(unsigned int  ii = 0; ii < vInv.size(); ii++)
     {
-        fnVec << vInv[ii].ToString() << endl; //protocol.* file contains CInc class
+        fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInc class
     }
 
-    fnOut << timeString << "VECSAVED --- saved file of tx vector: " << vecFile << endl;
+    fnOut << timeString << "VECSAVED --- saved file of tx std::vector: " << vecFile << std::endl;
 
     fnOut.close();
     fnVec.close();
@@ -150,18 +150,18 @@ void logFile(vector<CInv> vInv, string fileName)
     count++;
 }
 
-void dumpMemPool(string fileName)
+void dumpMemPool(std::string fileName)
 {
 	static int count = 0;
-	string timeString = createTimeStamp();
-	if(fileName == "") fileName = directory + "logNode" + nodeID + ".txt";
+	std::string timeString = createTimeStamp();
+	if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
 	else fileName = directory + fileName;
-	string mempoolFile = directory + to_string(count) + "_mempoolFile.txt";
-	string sysCmd;
-	ofstream fnOut;
-	fnOut.open(fileName,ofstream::app);
+	std::string mempoolFile = directory + std::to_string(count) + "_mempoolFile.txt";
+	std::string sysCmd;
+	std::ofstream fnOut;
+	fnOut.open(fileName,std::ofstream::app);
 
-	fnOut << timeString << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << endl;
+	fnOut << timeString << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << std::endl;
 	sysCmd = "bitcoin-cli getmempoolinfo > " + mempoolFile;
 	(void)system(sysCmd.c_str());
 	sysCmd = "bitcoin-cli getrawmempool >> " + mempoolFile;

@@ -27,14 +27,13 @@ std::vector<CInv> generateVInv(){
     else if(mintxsync > txToSync) txToSync = mintxsync;
 
     // log to file information regarding count of transactions to sync
-    logFile("TXCOUNT --- tx in mempool: " + to_string(txInMemPool) + 
-                                " --- tx sync count: " + to_string(txToSync));
+    logFile("TXCOUNT --- tx in mempool: " + std::to_string(txInMemPool) + 
+                                " --- tx sync count: " + std::to_string(txToSync));
     for(int ii = 0; ii < txToSync; ii++)
     {
     	// reached end of number of transactions to sync
     	if (it == syncTxIndex.get<ancestor_score>().end())
     	{
-    		//logFile("...end reached");
     		break;
     	}
         // create an inventory of hash of current transaction

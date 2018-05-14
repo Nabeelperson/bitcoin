@@ -36,6 +36,8 @@
 # error "Bitcoin cannot be compiled without assertions."
 #endif
 
+#define ENABLE_FALAFEL_SYNC 0
+
 std::atomic<int64_t> nTimeBestReceived(0); // Used only to inform the wallet of when we last received a block
 
 struct IteratorComparator
@@ -2244,6 +2246,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
     }
 
+#if ENABLE_FALAFEL_SYNC
     else if(strCommand == NetMsgType::TXMEMPOOLSYNC && !fImporting && !fReindex) {
         //Niave Sync protocol
         /**
@@ -2260,10 +2263,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         connman->ForEachNode([&connman, vInv, &msgMaker](CNode* pnode){
             if (pnode->nVersion < INVALID_CB_NO_BAN_VERSION || pnode->fDisconnect) return;
                 connman->PushMessage(pnode, msgMaker.Make(NetMsgType::INV, vInv));
-                logFile("SYNCSENT --- sync message sent to: " + to_string(pnode->GetId()));
+                logFile("SYNCSENT --- sync message sent to: " + std::to_string(pnode->GetId()));
         });
     }
-
+#endif
 
     else if (strCommand == NetMsgType::CMPCTBLOCK && !fImporting && !fReindex) // Ignore blocks received while importing
     {
@@ -2947,10 +2950,13 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
 
     // Process message
     bool fRet = false;
+#if ENABLE_FALAFEL_SYNC
     // counter to hold number of messages that have been received so far
     static int counter = 0;
+#endif
     try
     {
+#if ENABLE_FALAFEL_SYNC
         // after a certain number of messages are received, invoke mempool sync
         // protocol
         counter++;
@@ -2961,6 +2967,7 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
             logFile("ENDTRIG --- sync ended");
             counter = 0;
         }
+#endif
         fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, chainparams, connman, interruptMsgProc);
         if (interruptMsgProc)
             return false;
