@@ -35,6 +35,7 @@ class Env
 };
 
 // function prototypes for different logging functions
+void initLogger();
 std::string createTimeStamp();
 void logFile(std::string info, std::string fileName = ""); //logging a simple statement with timestamp
 int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName = "");//info from cmpctBlock

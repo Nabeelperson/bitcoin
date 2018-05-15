@@ -1455,7 +1455,12 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
     //LOGFILE
     //logFile(strCommand, "incomingMessages.txt");
-
+    static bool isLoggerInit = false;
+    if(!isLoggerInit)
+    {
+        initLogger();
+        isLoggerInit = true;
+    }
 
     LogPrint(BCLog::NET, "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->GetId());
     if (gArgs.IsArgSet("-dropmessagestest") && GetRand(gArgs.GetArg("-dropmessagestest", 0)) == 0)

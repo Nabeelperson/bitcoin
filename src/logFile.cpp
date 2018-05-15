@@ -5,11 +5,23 @@
 #include "logFile.h"
 
 bool debug = false;
-//const static std::string nodeID = "003";
-//const static std::string directory = "/home/an4s/.bitcoin/expLogFiles/";
 Env env;
 const static std::string nodeID = env.getUserName();
 const static std::string directory = "/home/" + env.getUserName() + "/.bitcoin/expLogFiles/";
+
+void initLogger()
+{
+    
+    boost::filesystem::path dir(directory);
+    if(!(boost::filesystem::exists(dir)))
+    {
+        if(debug)
+            std::cout << "Directory <" << directory << "> doesn't exist; creating directory" << std::endl;
+        if(boost::filesystem::create_directory(directory))
+            if(debug)
+                std::cout << "Directory created successfully" << std::endl;
+    }
+}
 
 std::string createTimeStamp()
 {
