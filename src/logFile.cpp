@@ -70,6 +70,8 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName)
     fnCmpct.close();
     fnOut.close();
 
+    dumpMemPool();
+
     return inc - 1;
 }
 
