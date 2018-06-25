@@ -37,6 +37,12 @@
 #endif
 
 #define ENABLE_FALAFEL_SYNC 0
+#define FALAFEL_SENDER 0
+#define FALAFEL_RECEIVER 0
+
+#if !(FALAFEL_SENDER ^ FALAFEL_RECEIVER)
+    #error "Must be only Falafel sender or receiver"
+#endif
 
 std::atomic<int64_t> nTimeBestReceived(0); // Used only to inform the wallet of when we last received a block
 
@@ -1833,6 +1839,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             fBlocksOnly = false;
 
         LOCK(cs_main);
+
+#if FALAFEL_RECEIVER
+        logFile(vInv, FALAFEL_RECEIVED);
+#endif
 
         uint32_t nFetchFlags = GetFetchFlags(pfrom);
 

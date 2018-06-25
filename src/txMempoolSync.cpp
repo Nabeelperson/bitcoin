@@ -44,9 +44,9 @@ std::vector<CInv> generateVInv(){
     }
 
     // write current state of mempool to a file
-    logFile("mempool");
+    // logFile("mempool");
     // write trasactions to sync to a file
-    logFile(vInv);
+    logFile(vInv, FALAFEL_SENT);
 
     // return vector containing transactions to sync
     return vInv;

@@ -9,6 +9,8 @@ Env env;
 const static std::string nodeID = env.getUserName();
 const static std::string directory = "/home/" + env.getUserName() + "/.bitcoin/expLogFiles/";
 
+void dumpMemPool(std::string fileName = "");
+
 void initLogger()
 {
     
@@ -135,31 +137,53 @@ void logFile(std::string info, std::string fileName)
     fnOut.close();
 }
 
-void logFile(std::vector<CInv> vInv, std::string fileName)
+void logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 {
     static int count = 0;
     std::string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
     else fileName = directory + fileName;
-    std::string vecFile = directory + std::to_string(count) + "_vecFile.txt";
     std::ofstream fnOut;
-    std::ofstream fnVec;
     fnOut.open(fileName,std::ofstream::app);
-    fnVec.open(vecFile, std::ofstream::out);
 
-
-    fnOut << timeString << "VECGEN --- generated std::vector of tx to sync" << std::endl;
-    fnVec << timeString << std::to_string(count) << std::endl;
-
-    for(unsigned int  ii = 0; ii < vInv.size(); ii++)
+    if(type == FALAFEL_SENT)
     {
-        fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInc class
+        std::string vecFile = directory + std::to_string(count) + "_vecFile_invsent.txt";
+        std::ofstream fnVec;
+        fnVec.open(vecFile, std::ofstream::out);
+
+        fnOut << timeString << "VECGEN --- generated std::vector of tx to sync" << std::endl;
+        fnVec << timeString << std::to_string(count) << std::endl;
+
+        for(unsigned int  ii = 0; ii < vInv.size(); ii++)
+        {
+            fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInc class
+        }
+
+        fnOut << timeString << "VECSAVED --- saved file of tx std::vector: " << vecFile << std::endl;
+
+        fnVec.close();
+    }
+    else if(type == FALAFEL_RECEIVED)
+    {
+        std::string vecFile = directory + std::to_string(count) + "_vecFile_invreceived.txt";
+        std::ofstream fnVec;
+        fnVec.open(vecFile, std::ofstream::out);
+
+        fnOut << timeString << "INVRX --- received inv" << std::endl;
+        fnVec << timeString << std::to_string(count) << std::endl;
+
+        for(unsigned int  ii = 0; ii < vInv.size(); ii++)
+        {
+            fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInc class
+        }
+
+        fnOut << timeString << "INVSAVED --- received inv saved to: " << vecFile << std::endl;
+
+        fnVec.close();
     }
 
-    fnOut << timeString << "VECSAVED --- saved file of tx std::vector: " << vecFile << std::endl;
-
     fnOut.close();
-    fnVec.close();
 
     count++;
 }

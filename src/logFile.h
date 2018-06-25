@@ -34,13 +34,18 @@ class Env
     }
 };
 
+typedef enum INVTYPE
+{
+    FALAFEL_SENT,
+    FALAFEL_RECEIVED,
+};
+
 // function prototypes for different logging functions
 void initLogger();
 std::string createTimeStamp();
 void logFile(std::string info, std::string fileName = ""); //logging a simple statement with timestamp
 int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName = "");//info from cmpctBlock
 void logFile(BlockTransactionsRequest &req, int inc, std::string fileName = ""); //info from getblocktxn
-void logFile(std::vector <CInv> vInv, std::string fileName = "" );
-void dumpMemPool(std::string fileName = "");
+void logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
 
 #endif
