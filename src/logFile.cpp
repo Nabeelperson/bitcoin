@@ -8,18 +8,28 @@ bool debug = false;
 Env env;
 const static std::string nodeID = env.getUserName();
 const static std::string directory = "/home/" + env.getUserName() + "/.bitcoin/expLogFiles/";
+const static std::string invRXdir = directory + "/received/";
 
 void dumpMemPool(std::string fileName = "");
 
 void initLogger()
 {
-    
     boost::filesystem::path dir(directory);
     if(!(boost::filesystem::exists(dir)))
     {
         if(debug)
             std::cout << "Directory <" << directory << "> doesn't exist; creating directory" << std::endl;
         if(boost::filesystem::create_directory(directory))
+            if(debug)
+                std::cout << "Directory created successfully" << std::endl;
+    }
+
+    boost::filesystem::path RX(invRXdir);
+    if(!(boost::filesystem::exists(invRXdir)))
+    {
+        if(debug)
+            std::cout << "Directory <" << invRXdir << "> doesn't exist; creating directory" << std::endl;
+        if(boost::filesystem::create_directory(invRXdir))
             if(debug)
                 std::cout << "Directory created successfully" << std::endl;
     }
@@ -153,7 +163,7 @@ void logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
         fnVec.open(vecFile, std::ofstream::out);
 
         fnOut << timeString << "VECGEN --- generated std::vector of tx to sync" << std::endl;
-        fnVec << timeString << std::to_string(count) << std::endl;
+        fnVec << timeString << std::to_string(vInv.size()) << std::endl;
 
         for(unsigned int  ii = 0; ii < vInv.size(); ii++)
         {
@@ -166,12 +176,12 @@ void logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
     }
     else if(type == FALAFEL_RECEIVED)
     {
-        std::string vecFile = directory + std::to_string(count) + "_vecFile_invreceived.txt";
+        std::string vecFile = invRXdir + std::to_string(count) + "_vecFile_invreceived.txt";
         std::ofstream fnVec;
         fnVec.open(vecFile, std::ofstream::out);
 
         fnOut << timeString << "INVRX --- received inv" << std::endl;
-        fnVec << timeString << std::to_string(count) << std::endl;
+        fnVec << timeString << std::to_string(vInv.size()) << std::endl;
 
         for(unsigned int  ii = 0; ii < vInv.size(); ii++)
         {
