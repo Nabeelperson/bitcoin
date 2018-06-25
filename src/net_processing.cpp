@@ -2969,13 +2969,13 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
 
     // Process message
     bool fRet = false;
-#if ENABLE_FALAFEL_SYNC
+#if FALAFEL_SENDER
     // counter to hold number of messages that have been received so far
     static int counter = 0;
 #endif
     try
     {
-#if ENABLE_FALAFEL_SYNC
+#if FALAFEL_SENDER
         // after a certain number of messages are received, invoke mempool sync
         // protocol
         counter++;
