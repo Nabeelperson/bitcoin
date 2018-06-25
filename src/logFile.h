@@ -34,7 +34,7 @@ class Env
     }
 };
 
-typedef enum INVTYPE
+enum INVTYPE
 {
     FALAFEL_SENT,
     FALAFEL_RECEIVED,
