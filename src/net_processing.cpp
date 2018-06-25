@@ -44,7 +44,7 @@
     #error "FalafelSync must be enabled"
 #endif
 
-#if !(FALAFEL_SENDER ^ FALAFEL_RECEIVER)
+#if ENABLE_FALAFEL_SYNC && !(FALAFEL_SENDER ^ FALAFEL_RECEIVER)
     #error "Must be only Falafel sender or receiver"
 #endif
 
