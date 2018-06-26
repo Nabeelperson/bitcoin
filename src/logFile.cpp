@@ -10,7 +10,7 @@ const static std::string nodeID = env.getUserName();
 const static std::string directory = "/home/" + env.getUserName() + "/.bitcoin/expLogFiles/";
 const static std::string invRXdir = directory + "/received/";
 
-void dumpMemPool(std::string fileName = "");
+void dumpMemPool(std::string fileName = "", INVTYPE type = FALAFEL_SENT, INVEVENT event = BEFORE, int counter = 0);
 
 void initLogger()
 {
@@ -122,13 +122,17 @@ void logFile(BlockTransactionsRequest &req, int inc,std::string fileName)
     fnReq.close();
 }
 
-void logFile(std::string info, std::string fileName)
+void logFile(std::string info, INVTYPE type, INVEVENT event, int counter, std::string fileName)
 {
 	if(info == "mempool")
 	{
-		dumpMemPool(fileName);
+		dumpMemPool(fileName, type, event, counter);
 		return;
 	}
+}
+
+void logFile(std::string info, std::string fileName)
+{
     std::string timeString = createTimeStamp();
     if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
     else fileName = directory + fileName;
@@ -147,7 +151,7 @@ void logFile(std::string info, std::string fileName)
     fnOut.close();
 }
 
-void logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
+int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 {
     static int count = 0;
     std::string timeString = createTimeStamp();
@@ -195,26 +199,35 @@ void logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 
     fnOut.close();
 
-    count++;
+    return count++;
 }
 
-void dumpMemPool(std::string fileName)
+void dumpMemPool(std::string fileName, INVTYPE type, INVEVENT event, int counter)
 {
-	static int count = 0;
-	std::string timeString = createTimeStamp();
-	if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
-	else fileName = directory + fileName;
-	std::string mempoolFile = directory + std::to_string(count) + "_mempoolFile.txt";
-	std::string sysCmd;
-	std::ofstream fnOut;
-	fnOut.open(fileName,std::ofstream::app);
+    std::string timeString = createTimeStamp();
+    if(fileName == "") fileName = directory + "logNode_" + nodeID + ".txt";
+    else fileName = directory + fileName;
+    std::ofstream fnOut;
+    std::string sysCmd;
+    std::string mempoolFile;
+    fnOut.open(fileName,std::ofstream::app);
+    if(type == FALAFEL_RECEIVED)
+    {
+        mempoolFile = invRXdir + std::to_string(counter) + ((event == BEFORE)? "_before" : "_after") + "_mempoolFile.txt";
+        fnOut << timeString << "INV" << ((event == BEFORE) ? "B" : "A") << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << std::endl;
+    }
+    else
+    {
+	    static int count = 0;
+	    mempoolFile = directory + std::to_string(count) + "_mempoolFile.txt";
 
-	fnOut << timeString << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << std::endl;
-	sysCmd = "bitcoin-cli getmempoolinfo > " + mempoolFile;
-	(void)system(sysCmd.c_str());
-	sysCmd = "bitcoin-cli getrawmempool >> " + mempoolFile;
-	(void)system(sysCmd.c_str());
+	    fnOut << timeString << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << std::endl;
+	    count++;
+    }
+    sysCmd = "bitcoin-cli getmempoolinfo > " + mempoolFile;
+    (void)system(sysCmd.c_str());
+    sysCmd = "bitcoin-cli getrawmempool >> " + mempoolFile;
+    (void)system(sysCmd.c_str());
 
-	fnOut.close();
-	count++;
+    fnOut.close();
 }

@@ -40,12 +40,19 @@ enum INVTYPE
     FALAFEL_RECEIVED,
 };
 
+enum INVEVENT
+{
+    BEFORE,
+    AFTER,
+};
+
 // function prototypes for different logging functions
 void initLogger();
 std::string createTimeStamp();
 void logFile(std::string info, std::string fileName = ""); //logging a simple statement with timestamp
 int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName = "");//info from cmpctBlock
 void logFile(BlockTransactionsRequest &req, int inc, std::string fileName = ""); //info from getblocktxn
-void logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
+int logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
+void logFile(std::string info, std::string fileName);
 
 #endif

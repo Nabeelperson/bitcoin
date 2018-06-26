@@ -1845,9 +1845,13 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         LOCK(cs_main);
 
 #if FALAFEL_RECEIVER
+        bool correctInv = false;
+        int loggerCount;
         if(vInv[0].hash.ToString() == "0fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe1")
         {
-            logFile(vInv, FALAFEL_RECEIVED);
+            correctInv = true;
+            loggerCount = logFile(vInv, FALAFEL_RECEIVED);
+            logFile("mempool", FALAFEL_RECEIVED, BEFORE, loggerCount);
             vInv.erase(vInv.begin());
         }
 #endif
@@ -1891,6 +1895,13 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             // Track requests for our stuff
             GetMainSignals().Inventory(inv.hash);
         }
+#if FALAFEL_RECEIVER
+        if(correctInv)
+        {
+            correctInv = false;
+            logFile("mempool", FALAFEL_RECEIVED, AFTER, loggerCount);
+        }
+#endif
     }
 
 
