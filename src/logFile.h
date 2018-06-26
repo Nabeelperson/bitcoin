@@ -52,7 +52,7 @@ std::string createTimeStamp();
 void logFile(std::string info, std::string fileName = ""); //logging a simple statement with timestamp
 int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName = "");//info from cmpctBlock
 void logFile(BlockTransactionsRequest &req, int inc, std::string fileName = ""); //info from getblocktxn
-int logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
-void logFile(std::string info, std::string fileName);
+int  logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
+void logFile(std::string info, INVTYPE type, INVEVENT = BEFORE, int counter = 0, std::string fileName = "");
 
 #endif
