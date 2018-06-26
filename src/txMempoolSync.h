@@ -19,7 +19,7 @@
 #include <ctime>
 #include <vector>
 
-#define FALAFELSYNCTRIGGER 25
+#define FALAFELSYNCTRIGGER 2500
 
 //Copied over from txmempool.h line 451
 //Included all the indexes for testing later to see which ones is the best to use
