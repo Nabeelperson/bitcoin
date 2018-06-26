@@ -19,6 +19,8 @@
 #include <ctime>
 #include <vector>
 
+#define FALAFELSYNCTRIGGER 25
+
 //Copied over from txmempool.h line 451
 //Included all the indexes for testing later to see which ones is the best to use
 typedef boost::multi_index_container<

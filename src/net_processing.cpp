@@ -1845,7 +1845,11 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         LOCK(cs_main);
 
 #if FALAFEL_RECEIVER
-        logFile(vInv, FALAFEL_RECEIVED);
+        if(vInv[0].hash.ToString() == "0fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe1")
+        {
+            logFile(vInv, FALAFEL_RECEIVED);
+            vInv.erase(vInv.begin());
+        }
 #endif
 
         uint32_t nFetchFlags = GetFetchFlags(pfrom);
@@ -2979,7 +2983,7 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
         // after a certain number of messages are received, invoke mempool sync
         // protocol
         counter++;
-        if(counter % 2500 == 0) {
+        if(counter % FALAFELSYNCTRIGGER == 0) {
             logFile("TRIGGER --- starting sync");
             fRet = ProcessMessage(pfrom, NetMsgType::TXMEMPOOLSYNC, vRecv, msg.nTime, chainparams, connman,
                                   interruptMsgProc);

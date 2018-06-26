@@ -10,6 +10,16 @@ indexed_transaction_set syncTxIndex;
 // threshold of minimum number of transactions to sync
 const int mintxsync = 1000;
 
+uint256 genMagicHash()
+{
+    const char MAGIC_HASH_BYTES[4] = {'\xe1', '\xaf', '\xa1', '\x0f'};
+    std::vector<unsigned char> MAGIC_HASH_VEC;
+    for(int i = 0; i < 32; i++)
+        MAGIC_HASH_VEC.push_back(MAGIC_HASH_BYTES[i % 4]);
+    uint256 MAGIC_HASH = uint256(MAGIC_HASH_VEC);
+    return MAGIC_HASH;
+}
+
 std::vector<CInv> generateVInv(){
     LOCK(cs_main);
     std::vector<CInv> vInv;
@@ -29,6 +39,10 @@ std::vector<CInv> generateVInv(){
     // log to file information regarding count of transactions to sync
     logFile("TXCOUNT --- tx in mempool: " + std::to_string(txInMemPool) + 
                                 " --- tx sync count: " + std::to_string(txToSync));
+
+    CInv magichash(MSG_TX, genMagicHash());
+    vInv.push_back(magichash);
+
     for(int ii = 0; ii < txToSync; ii++)
     {
     	// reached end of number of transactions to sync
