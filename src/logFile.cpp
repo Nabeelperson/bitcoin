@@ -63,7 +63,10 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName)
     fnCmpct.open(compactBlock, std::ofstream::out);
 
     fnOut << timeString << "CMPCTRECIVED - compact block recived" << std::endl;
+    fnOut << timeString << "CMPCTBLKHASH - " << Cblock.header.GetHash().ToString() << std::endl;
     txid = Cblock.getTXID();
+
+    fnCmpct << Cblock.header.GetHash().ToString() << std::endl;
 
     for(unsigned int i = 0; i < txid.size(); i++)
     {
