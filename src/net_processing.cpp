@@ -1896,11 +1896,14 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             GetMainSignals().Inventory(inv.hash);
         }
 #if FALAFEL_RECEIVER
+// this does not seem to be working; will look into this later
+#if 0
         if(correctInv)
         {
             correctInv = false;
             logFile("mempool", FALAFEL_RECEIVED, AFTER, loggerCount);
         }
+#endif
 #endif
     }
 
