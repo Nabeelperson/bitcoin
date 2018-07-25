@@ -1850,7 +1850,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         int loggerCount;
         if(vInv[0].hash.ToString() == "0fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe1")
         {
-            std::cout << vInv[0].hash.ToString() << std::endl;
             correctInv = true;
             loggerCount = logFile(vInv, FALAFEL_RECEIVED);
             logFile("mempool", FALAFEL_RECEIVED, BEFORE, loggerCount);
@@ -2137,7 +2136,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 #if FALAFEL_RECEIVER
             auto findRes = std::find(falafel_missing_invs.begin(),
                                      falafel_missing_invs.end(),
-                                     inv.ToString());
+                                     inv.hash.ToString());
             if(findRes != falafel_missing_invs.end())
             {
                 logFile(inv.hash.ToString(), "missingInvResTrack.txt");
@@ -3699,7 +3698,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
 #if FALAFEL_RECEIVER
                 if(std::find(falafel_missing_invs.begin(),
                              falafel_missing_invs.end(),
-                             inv.ToString()) != falafel_missing_invs.end())
+                             inv.hash.ToString()) != falafel_missing_invs.end())
                     logFile(inv.hash.ToString(), "missingInvReqTrack.txt");
 #endif
                 LogPrint(BCLog::NET, "Requesting %s peer=%d\n", inv.ToString(), pto->GetId());
