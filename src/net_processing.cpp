@@ -31,7 +31,6 @@
 #include "utilmoneystr.h"
 #include "utilstrencodings.h"
 #include "validationinterface.h"
-// #include <algorithm>
 
 #if defined(NDEBUG)
 # error "Bitcoin cannot be compiled without assertions."
@@ -1893,7 +1892,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 } else if (!fAlreadyHave && !fImporting && !fReindex && !IsInitialBlockDownload()) {
                     pfrom->AskFor(inv);
 #if FALAFEL_RECEIVER
-                    falafel_missing_invs.push_back(inv.ToString());
+                    if(correctInv)
+                        falafel_missing_invs.push_back(inv.ToString());
 #endif
                 }
             }
