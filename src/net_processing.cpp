@@ -1893,7 +1893,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                     pfrom->AskFor(inv);
 #if FALAFEL_RECEIVER
                     if(correctInv)
-                        falafel_missing_invs.push_back(inv.ToString());
+                        falafel_missing_invs.push_back(inv.hash.ToString());
 #endif
                 }
             }
@@ -2140,7 +2140,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                                      inv.ToString());
             if(findRes != falafel_missing_invs.end())
             {
-                logFile(inv.ToString(), "missingInvResTrack.txt");
+                logFile(inv.hash.ToString(), "missingInvResTrack.txt");
                 falafel_missing_invs.erase(findRes);
             }
 #endif
@@ -3700,7 +3700,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
                 if(std::find(falafel_missing_invs.begin(),
                              falafel_missing_invs.end(),
                              inv.ToString()) != falafel_missing_invs.end())
-                    logFile(inv.ToString(), "missingInvReqTrack.txt");
+                    logFile(inv.hash.ToString(), "missingInvReqTrack.txt");
 #endif
                 LogPrint(BCLog::NET, "Requesting %s peer=%d\n", inv.ToString(), pto->GetId());
                 vGetData.push_back(inv);
