@@ -31,6 +31,7 @@
 #include "utilmoneystr.h"
 #include "utilstrencodings.h"
 #include "validationinterface.h"
+// #include <algorithm>
 
 #if defined(NDEBUG)
 # error "Bitcoin cannot be compiled without assertions."
@@ -46,6 +47,10 @@
 
 #if ENABLE_FALAFEL_SYNC && !(FALAFEL_SENDER ^ FALAFEL_RECEIVER)
     #error "Must be only Falafel sender or receiver"
+#endif
+
+#if FALAFEL_RECEIVER
+std::vector<std::string> falafel_missing_invs;
 #endif
 
 std::atomic<int64_t> nTimeBestReceived(0); // Used only to inform the wallet of when we last received a block
@@ -1462,9 +1467,6 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
 
 bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const CChainParams& chainparams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
 {
-
-    //LOGFILE
-    //logFile(strCommand, "incomingMessages.txt");
     static bool isLoggerInit = false;
     if(!isLoggerInit)
     {
@@ -1849,6 +1851,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         int loggerCount;
         if(vInv[0].hash.ToString() == "0fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe1")
         {
+            std::cout << vInv[0].hash.ToString() << std::endl;
             correctInv = true;
             loggerCount = logFile(vInv, FALAFEL_RECEIVED);
             logFile("mempool", FALAFEL_RECEIVED, BEFORE, loggerCount);
@@ -1889,6 +1892,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                     LogPrint(BCLog::NET, "transaction (%s) inv sent in violation of protocol peer=%d\n", inv.hash.ToString(), pfrom->GetId());
                 } else if (!fAlreadyHave && !fImporting && !fReindex && !IsInitialBlockDownload()) {
                     pfrom->AskFor(inv);
+#if FALAFEL_RECEIVER
+                    falafel_missing_invs.push_back(inv.ToString());
+#endif
                 }
             }
 
@@ -2128,6 +2134,16 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         std::list<CTransactionRef> lRemovedTxn;
 
         if (!AlreadyHave(inv) && AcceptToMemoryPool(mempool, state, ptx, true, &fMissingInputs, &lRemovedTxn)) {
+#if FALAFEL_RECEIVER
+            auto findRes = std::find(falafel_missing_invs.begin(),
+                                     falafel_missing_invs.end(),
+                                     inv.ToString());
+            if(findRes != falafel_missing_invs.end())
+            {
+                logFile(inv.ToString(), "missingInvResTrack.txt");
+                falafel_missing_invs.erase(findRes);
+            }
+#endif
             mempool.check(pcoinsTip);
             RelayTransaction(tx, connman);
             for (unsigned int i = 0; i < tx.vout.size(); i++) {
@@ -2436,7 +2452,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 logFile("cmpctblock", "blockType.txt");
 
                 //if we get here that means its a valid cmpctblock
-                int inc = logFile(cmpctblock); //logging compact block
+                int inc = logFile(cmpctblock, pfrom->GetAddrName()); //logging compact block
 
                 BlockTransactionsRequest req;
                 for (size_t i = 0; i < cmpctblock.BlockTxCount(); i++) {
@@ -3680,6 +3696,12 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
             const CInv& inv = (*pto->mapAskFor.begin()).second;
             if (!AlreadyHave(inv))
             {
+#if FALAFEL_RECEIVER
+                if(std::find(falafel_missing_invs.begin(),
+                             falafel_missing_invs.end(),
+                             inv.ToString()) != falafel_missing_invs.end())
+                    logFile(inv.ToString(), "missingInvReqTrack.txt");
+#endif
                 LogPrint(BCLog::NET, "Requesting %s peer=%d\n", inv.ToString(), pto->GetId());
                 vGetData.push_back(inv);
                 if (vGetData.size() >= 1000)

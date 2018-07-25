@@ -3,6 +3,7 @@
 //Soft forks created by two blocks coming in are also recorded
 
 #include "logFile.h"
+#include <chrono>
 
 bool debug = false;
 Env env;
@@ -45,10 +46,10 @@ std::string createTimeStamp()
     timeStamp = localtime(&currTime); //converts seconds to tm struct
     timeString = asctime(timeStamp); //converts tm struct to readable timestamp string
     timeString.back() = ' '; //replaces newline with space character
-    return timeString + ": ";
+    return timeString + std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count()) + " : ";
 }
 
-int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName)
+int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fileName)
 {
     static int inc = 0; //file increment
     std::string timeString = createTimeStamp();
@@ -62,7 +63,7 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName)
     fnOut.open(fileName, std::ofstream::app);
     fnCmpct.open(compactBlock, std::ofstream::out);
 
-    fnOut << timeString << "CMPCTRECIVED - compact block recived" << std::endl;
+    fnOut << timeString << "CMPCTRECIVED - compact block received from " << from << std::endl;
     fnOut << timeString << "CMPCTBLKHASH - " << Cblock.header.GetHash().ToString() << std::endl;
     txid = Cblock.getTXID();
 
@@ -78,7 +79,7 @@ int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string fileName)
     if(debug){
         std::cout << "inc: " << inc << std::endl;
         std::cout << "fileName: " << fileName << " --- cmpctblock file: " << compactBlock << std::endl;
-        std::cout << timeString << "CMPCTRECIVED - compact block recived" << std::endl;
+        std::cout << timeString << "CMPCTRECIVED - compact block received from " << from << std::endl;
     }
 
     inc++;
