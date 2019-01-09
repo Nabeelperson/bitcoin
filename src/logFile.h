@@ -7,9 +7,10 @@
 #include <fstream>
 #include <string>
 #include <ctime>
-#include "blockencodings.h" //Comacpt block, getblocktxn, blocktxn, normal block
+#include "blockencodings.h" // Compact block, getblocktxn, blocktxn, normal block
 #include "protocol.h" //CInv
 #include "validation.h" //for cs_main
+#include "net.h" // CConnman
 
 // get current user name for logfile
 // https://stackoverflow.com/a/8953445
@@ -46,8 +47,12 @@ enum INVEVENT
     AFTER,
 };
 
+#define LOG_NEIGHBOR_ADDRESSES  0
+
 // function prototypes for different logging functions
-void initLogger();
+bool initLogger();
+bool initAddrLogger();
+void AddrLoggerThread(CConnman* connman);
 std::string createTimeStamp();
 void logFile(std::string info, std::string fileName = ""); //logging a simple statement with timestamp
 int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fileName = "");//info from cmpctBlock

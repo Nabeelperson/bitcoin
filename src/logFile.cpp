@@ -5,35 +5,101 @@
 #include "logFile.h"
 #include <chrono>
 
+#define UNIX_TIMESTAMP \
+    std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count())
+
 bool debug = false;
 Env env;
 const static std::string nodeID = env.getUserName();
-const static std::string directory = "/home/" + env.getUserName() + "/.bitcoin/expLogFiles/";
-const static std::string invRXdir = directory + "/received/";
+static std::string strDataDir;
+static std::string directory;
+static std::string invRXdir;
+static std::string addrLoggerdir;
+static int64_t addrLoggerTimeoutSecs = 1;
 
 void dumpMemPool(std::string fileName = "", INVTYPE type = FALAFEL_SENT, INVEVENT event = BEFORE, int counter = 0);
 
-void initLogger()
+bool initLogger()
 {
+    strDataDir = GetDataDir().string();
+    directory  = strDataDir + "/expLogFiles/";
+    invRXdir = directory + "/received/";
+    
     boost::filesystem::path dir(directory);
     if(!(boost::filesystem::exists(dir)))
     {
-        if(debug)
-            std::cout << "Directory <" << directory << "> doesn't exist; creating directory" << std::endl;
-        if(boost::filesystem::create_directory(directory))
-            if(debug)
-                std::cout << "Directory created successfully" << std::endl;
+        if(fPrintToConsole)
+            std::cout << "Directory <" << dir << "> doesn't exist; creating directory" << std::endl;
+        if(boost::filesystem::create_directory(dir))
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << dir << "> created successfully" << std::endl;
+        }
+        else
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << dir << "> not created" << std::endl;
+            return false;
+        }
     }
 
     boost::filesystem::path RX(invRXdir);
-    if(!(boost::filesystem::exists(invRXdir)))
+    if(!(boost::filesystem::exists(RX)))
     {
-        if(debug)
-            std::cout << "Directory <" << invRXdir << "> doesn't exist; creating directory" << std::endl;
-        if(boost::filesystem::create_directory(invRXdir))
-            if(debug)
-                std::cout << "Directory created successfully" << std::endl;
+        if(fPrintToConsole)
+            std::cout << "Directory <" << RX << "> doesn't exist; creating directory" << std::endl;
+        if(boost::filesystem::create_directory(RX))
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << RX << "> created successfully" << std::endl;
+        }
+        else
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << RX << "> not created" << std::endl;
+            return false;
+        }
     }
+    return true;
+}
+
+void AddrLoggerThread(CConnman* connman)
+{
+    while(true)
+    {
+        boost::this_thread::sleep_for(boost::chrono::seconds{addrLoggerTimeoutSecs});
+        std::vector<CNodeStats> vstats;
+        connman->GetNodeStats(vstats);
+        std::string fileName = addrLoggerdir + UNIX_TIMESTAMP + ".txt";
+        std::ofstream fnOut(fileName, std::ofstream::out);
+        for (auto stat : vstats)
+            fnOut << stat.addr.ToStringIP() << std::endl;
+        fnOut.close();
+    }
+}
+
+bool initAddrLogger()
+{
+    addrLoggerdir = directory + "/addrs/";
+
+    boost::filesystem::path addr(addrLoggerdir);
+    if(!(boost::filesystem::exists(addr)))
+    {
+        if(fPrintToConsole)
+            std::cout << "Directory <" << addr << "> doesn't exist; creating directory" << std::endl;
+        if(boost::filesystem::create_directory(addr))
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << addr << "> created successfully" << std::endl;
+        }
+        else
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << addr << "> not created" << std::endl;
+            return false;
+        }
+    }
+    return true;
 }
 
 std::string createTimeStamp()
@@ -46,7 +112,7 @@ std::string createTimeStamp()
     timeStamp = localtime(&currTime); //converts seconds to tm struct
     timeString = asctime(timeStamp); //converts tm struct to readable timestamp string
     timeString.back() = ' '; //replaces newline with space character
-    return timeString + std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count()) + " : ";
+    return timeString + UNIX_TIMESTAMP + " : ";
 }
 
 int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fileName)

@@ -36,9 +36,9 @@
 # error "Bitcoin cannot be compiled without assertions."
 #endif
 
-#define ENABLE_FALAFEL_SYNC 0
-#define FALAFEL_SENDER 0
-#define FALAFEL_RECEIVER 0
+#define ENABLE_FALAFEL_SYNC     0
+#define FALAFEL_SENDER          0
+#define FALAFEL_RECEIVER        0
 
 #if !ENABLE_FALAFEL_SYNC && (FALAFEL_SENDER || FALAFEL_RECEIVER)
     #error "FalafelSync must be enabled"
@@ -1466,13 +1466,6 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
 
 bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const CChainParams& chainparams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
 {
-    static bool isLoggerInit = false;
-    if(!isLoggerInit)
-    {
-        initLogger();
-        isLoggerInit = true;
-    }
-
     LogPrint(BCLog::NET, "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->GetId());
     if (gArgs.IsArgSet("-dropmessagestest") && GetRand(gArgs.GetArg("-dropmessagestest", 0)) == 0)
     {

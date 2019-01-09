@@ -1720,6 +1720,18 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         return false;
     }
 
+    if(!initLogger())
+        fRequestShutdown = true;
+
+#if LOG_NEIGHBOR_ADDRESSES
+
+    if(initAddrLogger())
+        threadGroup.create_thread(boost::bind(AddrLoggerThread, &connman));
+    else
+        fRequestShutdown = true;
+
+#endif
+
     // ********************************************************* Step 12: finished
 
     SetRPCWarmupFinished();
