@@ -48,6 +48,17 @@ enum INVEVENT
 };
 
 #define LOG_NEIGHBOR_ADDRESSES  0
+#define ENABLE_FALAFEL_SYNC     0
+#define FALAFEL_SENDER          0
+#define FALAFEL_RECEIVER        0
+
+#if !ENABLE_FALAFEL_SYNC && (FALAFEL_SENDER || FALAFEL_RECEIVER)
+    #error "FalafelSync must be enabled"
+#endif
+
+#if ENABLE_FALAFEL_SYNC && !(FALAFEL_SENDER ^ FALAFEL_RECEIVER)
+    #error "Must be only Falafel sender or receiver"
+#endif
 
 // function prototypes for different logging functions
 bool initLogger();
