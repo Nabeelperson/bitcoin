@@ -19,12 +19,18 @@ static int64_t addrLoggerTimeoutSecs = 1;
 
 void dumpMemPool(std::string fileName = "", INVTYPE type = FALAFEL_SENT, INVEVENT event = BEFORE, int counter = 0);
 
+/*
+ * Initialize log file system that records events in Bitcoin
+ */
 bool initLogger()
 {
+    // paths to different directories
     strDataDir = GetDataDir().string();
     directory  = strDataDir + "/expLogFiles/";
     invRXdir = directory + "/received/";
-    
+
+    // create directories if they do not exist
+    // - create main directory if it does not exist
     boost::filesystem::path dir(directory);
     if(!(boost::filesystem::exists(dir)))
     {
@@ -43,6 +49,8 @@ bool initLogger()
         }
     }
 
+    // - create directory to record information about received inv messages
+    //   if it does not exit
     boost::filesystem::path RX(invRXdir);
     if(!(boost::filesystem::exists(RX)))
     {
@@ -63,25 +71,37 @@ bool initLogger()
     return true;
 }
 
+/*
+ * Callback for thread responsible for logging information about connected peers
+ */
 void AddrLoggerThread(CConnman* connman)
 {
+    // record address of connected peers every one second
     while(true)
     {
+        // put this thread to sleep for a second
         boost::this_thread::sleep_for(boost::chrono::seconds{addrLoggerTimeoutSecs});
         std::vector<CNodeStats> vstats;
+        // get stats for connected nodes
         connman->GetNodeStats(vstats);
         std::string fileName = addrLoggerdir + UNIX_TIMESTAMP + ".txt";
         std::ofstream fnOut(fileName, std::ofstream::out);
+        // log stat for each connected node
         for (auto stat : vstats)
             fnOut << stat.addr.ToStringIP() << std::endl;
         fnOut.close();
     }
 }
 
+/*
+ * Initialize log file system that logs information about connected peers
+ */
 bool initAddrLogger()
 {
+    // path to directory where addresses of connected peers are logged
     addrLoggerdir = directory + "/addrs/";
 
+    // create directory if it does not exist
     boost::filesystem::path addr(addrLoggerdir);
     if(!(boost::filesystem::exists(addr)))
     {
@@ -102,6 +122,9 @@ bool initAddrLogger()
     return true;
 }
 
+/*
+ * Create a human readable timestamp
+ */
 std::string createTimeStamp()
 {
     time_t currTime;
@@ -115,6 +138,9 @@ std::string createTimeStamp()
     return timeString + UNIX_TIMESTAMP + " : ";
 }
 
+/*
+ * Log information about transactions in a block
+ */
 int logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fileName)
 {
     static int inc = 0; //file increment
@@ -201,6 +227,9 @@ void logFile(std::string info, INVTYPE type, INVEVENT event, int counter, std::s
 	}
 }
 
+/*
+ * Log some information to a file
+ */
 void logFile(std::string info, std::string fileName)
 {
     std::string timeString = createTimeStamp();
@@ -213,7 +242,7 @@ void logFile(std::string info, std::string fileName)
 
     if(debug){
         if(!fnOut.is_open()) std::cout << "fnOut failed" << std::endl;
-        std::cout << "logfile for std::string " << std::endl;
+        std::cout << "logfile for string " << std::endl;
         std::cout << "fileName:" << fileName << std::endl;
         std::cout << timeString << info << std::endl;
     }
@@ -221,6 +250,9 @@ void logFile(std::string info, std::string fileName)
     fnOut.close();
 }
 
+/*
+ * Log contents of an inv message
+ */
 int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 {
     static int count = 0;
@@ -230,6 +262,7 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
     std::ofstream fnOut;
     fnOut.open(fileName,std::ofstream::app);
 
+    // log contents of an inv message that is being sent to peers
     if(type == FALAFEL_SENT)
     {
         std::string vecFile = directory + std::to_string(count) + "_vecFile_invsent.txt";
@@ -248,6 +281,7 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 
         fnVec.close();
     }
+    // log contents of an inv message that is received from a peer
     else if(type == FALAFEL_RECEIVED)
     {
         std::string vecFile = invRXdir + std::to_string(count) + "_vecFile_invreceived.txt";
@@ -272,6 +306,9 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
     return count++;
 }
 
+/*
+ * Dump current state of the mempool to a file
+ */
 void dumpMemPool(std::string fileName, INVTYPE type, INVEVENT event, int counter)
 {
     std::string timeString = createTimeStamp();
@@ -281,6 +318,8 @@ void dumpMemPool(std::string fileName, INVTYPE type, INVEVENT event, int counter
     std::string sysCmd;
     std::string mempoolFile;
     fnOut.open(fileName,std::ofstream::app);
+    // dump mempool before or after an inv message is received
+    // (to use with finding how the inv message affects the mempool)
     if(type == FALAFEL_RECEIVED)
     {
         mempoolFile = invRXdir + std::to_string(counter) + ((event == BEFORE)? "_before" : "_after") + "_mempoolFile.txt";
@@ -294,6 +333,8 @@ void dumpMemPool(std::string fileName, INVTYPE type, INVEVENT event, int counter
 	    fnOut << timeString << "DMPMEMPOOL --- Dumping mempool to file: " << mempoolFile << std::endl;
 	    count++;
     }
+    // use bitcoin-cli to get mempool info
+    // TO-DO: improve to get rid of system() calls
     sysCmd = "bitcoin-cli getmempoolinfo > " + mempoolFile;
     (void)system(sysCmd.c_str());
     sysCmd = "bitcoin-cli getrawmempool >> " + mempoolFile;
