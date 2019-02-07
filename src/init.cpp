@@ -1721,14 +1721,32 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 
     if(!initLogger())
+    {
+        LogPrintf(">> ERROR : initLogger failed");
         fRequestShutdown = true;
+    }
 
 #if LOG_NEIGHBOR_ADDRESSES
 
     if(initAddrLogger())
         threadGroup.create_thread(boost::bind(AddrLoggerThread, &connman));
     else
+    {
+        LogPrintf(">> ERROR : initAddrLogger failed");
         fRequestShutdown = true;
+    }
+
+#endif
+
+#if LOG_CPU_USAGE
+
+    if(initProcessCPUUsageLogger())
+        threadGroup.create_thread(CPUUsageLoggerThread);
+    else
+    {
+        LogPrintf(">> ERROR : initProcessCPUUsageLogger failed");
+        fRequestShutdown = true;
+    }
 
 #endif
 

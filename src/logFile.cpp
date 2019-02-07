@@ -4,6 +4,7 @@
 
 #include "logFile.h"
 #include <chrono>
+#include <unistd.h>
 
 #define UNIX_TIMESTAMP \
     std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count())
@@ -15,6 +16,7 @@ static std::string strDataDir;
 static std::string directory;
 static std::string invRXdir;
 static std::string addrLoggerdir;
+static std::string cpudir;
 static int64_t addrLoggerTimeoutSecs = 1;
 
 void dumpMemPool(std::string fileName = "", INVTYPE type = FALAFEL_SENT, INVEVENT event = BEFORE, int counter = 0);
@@ -341,4 +343,65 @@ void dumpMemPool(std::string fileName, INVTYPE type, INVEVENT event, int counter
     (void)system(sysCmd.c_str());
 
     fnOut.close();
+}
+
+long getProcessCPUStats()
+{
+    std::ifstream fnIn("/proc/" + std::to_string(getpid()) + "/stat");
+    std::string line;
+    getline(fnIn, line);
+
+    std::istringstream ss(line);
+    // refer to 'man proc', section '/proc/[pid]/stat'
+    long utime = 0, stime = 0, cutime = 0, cstime = 0;
+    for(int i = 1; i <= 17; i++)
+    {
+        std::string word;
+        ss >> word;
+        switch(i)
+        {
+            case 14: utime     = std::stoi(word); break;
+            case 15: stime     = std::stoi(word); break;
+            case 16: cutime    = std::stoi(word); break;
+            case 17: cstime    = std::stoi(word); break;
+            default: break;
+        }
+    }
+
+    return utime + stime + cutime + cstime;
+}
+
+long getTotalTime()
+{
+    std::ifstream fnIn("/proc/stat");
+    std::string line;
+    getline(fnIn, line);
+
+    std::stringstream ss(line);
+    std::string word;
+    ss >> word;
+    long total = 0;
+    while(ss >> word)
+        total += std::stoi(word);
+
+    return total;
+}
+
+void CPUUsageLoggerThread()
+{
+    std::ofstream fnOut(directory + "/cpuusage_" + nodeID + ".txt", std::ofstream::app);
+    while(true)
+    {
+        long first = getProcessCPUStats();
+        long firstTotalTime = getTotalTime();
+        // put this thread to sleep for a second
+        boost::this_thread::sleep_for(boost::chrono::milliseconds{10});
+        fnOut << createTimeStamp() << (100.0 * (getProcessCPUStats() - first)/(getTotalTime() - firstTotalTime)) << std::endl;
+    }
+}
+
+// empty: for future uses
+bool initProcessCPUUsageLogger()
+{
+    return true;
 }

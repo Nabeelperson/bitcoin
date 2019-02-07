@@ -48,6 +48,7 @@ enum INVEVENT
 };
 
 #define LOG_NEIGHBOR_ADDRESSES  0
+#define LOG_CPU_USAGE           0
 #define ENABLE_FALAFEL_SYNC     0
 #define FALAFEL_SENDER          0
 #define FALAFEL_RECEIVER        0
@@ -64,6 +65,8 @@ enum INVEVENT
 bool initLogger();
 bool initAddrLogger();
 void AddrLoggerThread(CConnman* connman);
+bool initProcessCPUUsageLogger();
+void CPUUsageLoggerThread();
 std::string createTimeStamp();
 void logFile(std::string info, std::string fileName = ""); //logging a simple statement with timestamp
 int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fileName = "");//info from cmpctBlock
