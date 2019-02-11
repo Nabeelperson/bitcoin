@@ -382,7 +382,7 @@ long getTotalTime()
     ss >> word;
     long total = 0;
     while(ss >> word)
-        total += std::stoi(word);
+        total += std::stol(word);
 
     return total;
 }
