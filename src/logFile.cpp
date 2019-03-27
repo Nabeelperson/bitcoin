@@ -15,6 +15,7 @@ const static std::string nodeID = env.getUserName();
 static std::string strDataDir;
 static std::string directory;
 static std::string invRXdir;
+static std::string txdir;
 static std::string addrLoggerdir;
 static std::string cpudir;
 static int64_t addrLoggerTimeoutSecs = 1;
@@ -29,7 +30,8 @@ bool initLogger()
     // paths to different directories
     strDataDir = GetDataDir().string();
     directory  = strDataDir + "/expLogFiles/";
-    invRXdir = directory + "/received/";
+    invRXdir   = directory + "/received/";
+    txdir      = directory + "/txs/";
 
     // create directories if they do not exist
     // - create main directory if it does not exist
@@ -70,6 +72,27 @@ bool initLogger()
             return false;
         }
     }
+
+    // - create directory to record information about received tx & inv
+    //   if it does not exit
+    boost::filesystem::path TXInv(txdir);
+    if(!(boost::filesystem::exists(TXInv)))
+    {
+        if(fPrintToConsole)
+            std::cout << "Directory <" << TXInv << "> doesn't exist; creating directory" << std::endl;
+        if(boost::filesystem::create_directory(TXInv))
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << TXInv << "> created successfully" << std::endl;
+        }
+        else
+        {
+            if(fPrintToConsole)
+                std::cout << "Directory <" << TXInv << "> not created" << std::endl;
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -253,7 +276,7 @@ void logFile(std::string info, std::string fileName)
 }
 
 /*
- * Log contents of an inv message
+ * Log contents of a block inv message
  */
 int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 {
@@ -276,7 +299,7 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 
         for(unsigned int  ii = 0; ii < vInv.size(); ii++)
         {
-            fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInc class
+            fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInv class
         }
 
         fnOut << timeString << "VECSAVED --- saved file of tx std::vector: " << vecFile << std::endl;
@@ -295,7 +318,7 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 
         for(unsigned int  ii = 0; ii < vInv.size(); ii++)
         {
-            fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInc class
+            fnVec << vInv[ii].ToString() << std::endl; //protocol.* file contains CInv class
         }
 
         fnOut << timeString << "INVSAVED --- received inv saved to: " << vecFile << std::endl;
@@ -306,6 +329,30 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
     fnOut.close();
 
     return count++;
+}
+
+/*
+ * Log hash of a transaction inv to file
+ */
+void logFile(CInv inv, std::string fileName)
+{
+    if(fileName == "") fileName = directory + "txinvs_" + nodeID + ".txt";
+    else fileName = txdir + fileName;
+    std::ofstream fnOut(fileName, std::ofstream::app);
+    fnOut << createTimeStamp() << inv.hash.ToString() << std::endl;
+    fnOut.close();
+}
+
+/*
+ * Log arrival of a valid transaction to file
+ */
+void logFile(CTransaction tx, std::string fileName)
+{
+    if(fileName == "") fileName = directory + "txs_" + nodeID + ".txt";
+    else fileName = txdir + fileName;
+    std::ofstream fnOut(fileName, std::ofstream::app);
+    fnOut << createTimeStamp() << tx.GetHash().ToString() << std::endl;
+    fnOut.close();
 }
 
 /*

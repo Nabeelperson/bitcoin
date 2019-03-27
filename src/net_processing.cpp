@@ -1827,12 +1827,14 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         LOCK(cs_main);
 
 #if FALAFEL_RECEIVER
+        // check whether received inv message is from MempoolSync sender
         bool correctInv = false;
         int loggerCount;
         if(vInv[0].hash.ToString() == "0fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe10fa1afe1")
         {
             correctInv = true;
             loggerCount = logFile(vInv, FALAFEL_RECEIVED);
+            // dump state of mempool to file
             logFile("mempool", FALAFEL_RECEIVED, BEFORE, loggerCount);
             vInv.erase(vInv.begin());
         }
@@ -1866,12 +1868,16 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             }
             else
             {
+#if LOG_TRANSACTION_INV
+                logFile(inv);
+#endif
                 pfrom->AddInventoryKnown(inv);
                 if (fBlocksOnly) {
                     LogPrint(BCLog::NET, "transaction (%s) inv sent in violation of protocol peer=%d\n", inv.hash.ToString(), pfrom->GetId());
                 } else if (!fAlreadyHave && !fImporting && !fReindex && !IsInitialBlockDownload()) {
                     pfrom->AskFor(inv);
 #if FALAFEL_RECEIVER
+                    // keep record of missing transactions
                     if(correctInv)
                         falafel_missing_invs.push_back(inv.hash.ToString());
 #endif
@@ -2114,10 +2120,15 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         std::list<CTransactionRef> lRemovedTxn;
 
         if (!AlreadyHave(inv) && AcceptToMemoryPool(mempool, state, ptx, true, &fMissingInputs, &lRemovedTxn)) {
+#if LOG_TRANSACTIONS
+            logFile(tx);
+#endif
 #if FALAFEL_RECEIVER
+            // check if one of the missing transactions that we care about is received
             auto findRes = std::find(falafel_missing_invs.begin(),
                                      falafel_missing_invs.end(),
                                      inv.hash.ToString());
+            // if transaction is received, log to appropriate file
             if(findRes != falafel_missing_invs.end())
             {
                 logFile(inv.hash.ToString(), "missingInvResTrack.txt");

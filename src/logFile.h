@@ -52,6 +52,8 @@ enum INVEVENT
 #define ENABLE_FALAFEL_SYNC     0
 #define FALAFEL_SENDER          0
 #define FALAFEL_RECEIVER        0
+#define LOG_TRANSACTION_INVS    0
+#define LOG_TRANSACTIONS        0
 
 #if !ENABLE_FALAFEL_SYNC && (FALAFEL_SENDER || FALAFEL_RECEIVER)
     #error "FalafelSync must be enabled"
@@ -73,5 +75,7 @@ int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fi
 void logFile(BlockTransactionsRequest &req, int inc, std::string fileName = ""); //info from getblocktxn
 int  logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
 void logFile(std::string info, INVTYPE type, INVEVENT = BEFORE, int counter = 0, std::string fileName = "");
+void logFile(CInv inv, std::string fileName = "");
+void logFile(CTransaction tx, std::string fileName = "");
 
 #endif
