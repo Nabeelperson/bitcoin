@@ -336,7 +336,7 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
  */
 void logFile(CInv inv, std::string fileName)
 {
-    if(fileName == "") fileName = directory + "txinvs_" + nodeID + ".txt";
+    if(fileName == "") fileName = txdir + "txinvs_" + nodeID + ".txt";
     else fileName = txdir + fileName;
     std::ofstream fnOut(fileName, std::ofstream::app);
     fnOut << createTimeStamp() << inv.hash.ToString() << std::endl;
@@ -348,7 +348,7 @@ void logFile(CInv inv, std::string fileName)
  */
 void logFile(CTransaction tx, std::string fileName)
 {
-    if(fileName == "") fileName = directory + "txs_" + nodeID + ".txt";
+    if(fileName == "") fileName = txdir + "txs_" + nodeID + ".txt";
     else fileName = txdir + fileName;
     std::ofstream fnOut(fileName, std::ofstream::app);
     fnOut << createTimeStamp() << tx.GetHash().ToString() << std::endl;

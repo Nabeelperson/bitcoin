@@ -1868,7 +1868,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             }
             else
             {
-#if LOG_TRANSACTION_INV
+#if LOG_TRANSACTION_INVS
                 logFile(inv);
 #endif
                 pfrom->AddInventoryKnown(inv);
