@@ -1869,7 +1869,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             else
             {
 #if LOG_TRANSACTION_INVS
-                logFile(inv);
+                logFile(inv, pfrom->GetAddrName());
 #endif
                 pfrom->AddInventoryKnown(inv);
                 if (fBlocksOnly) {
@@ -2121,7 +2121,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         if (!AlreadyHave(inv) && AcceptToMemoryPool(mempool, state, ptx, true, &fMissingInputs, &lRemovedTxn)) {
 #if LOG_TRANSACTIONS
-            logFile(tx);
+            logFile(tx, pfrom->GetAddrName());
 #endif
 #if FALAFEL_RECEIVER
             // check if one of the missing transactions that we care about is received

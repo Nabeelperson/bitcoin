@@ -75,7 +75,7 @@ int  logFile(CBlockHeaderAndShortTxIDs &Cblock, std::string from, std::string fi
 void logFile(BlockTransactionsRequest &req, int inc, std::string fileName = ""); //info from getblocktxn
 int  logFile(std::vector <CInv> vInv, INVTYPE type = FALAFEL_SENT, std::string fileName = "");
 void logFile(std::string info, INVTYPE type, INVEVENT = BEFORE, int counter = 0, std::string fileName = "");
-void logFile(CInv inv, std::string fileName = "");
-void logFile(CTransaction tx, std::string fileName = "");
+void logFile(CInv inv, std::string from, std::string fileName = "");
+void logFile(CTransaction tx, std::string from, std::string fileName = "");
 
 #endif

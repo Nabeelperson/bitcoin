@@ -334,24 +334,24 @@ int logFile(std::vector<CInv> vInv, INVTYPE type, std::string fileName)
 /*
  * Log hash of a transaction inv to file
  */
-void logFile(CInv inv, std::string fileName)
+void logFile(CInv inv, std::string from, std::string fileName)
 {
     if(fileName == "") fileName = txdir + "txinvs_" + nodeID + ".txt";
     else fileName = txdir + fileName;
     std::ofstream fnOut(fileName, std::ofstream::app);
-    fnOut << createTimeStamp() << inv.hash.ToString() << std::endl;
+    fnOut << createTimeStamp() << inv.hash.ToString() << " from " << from << std::endl;
     fnOut.close();
 }
 
 /*
  * Log arrival of a valid transaction to file
  */
-void logFile(CTransaction tx, std::string fileName)
+void logFile(CTransaction tx, std::string from, std::string fileName)
 {
     if(fileName == "") fileName = txdir + "txs_" + nodeID + ".txt";
     else fileName = txdir + fileName;
     std::ofstream fnOut(fileName, std::ofstream::app);
-    fnOut << createTimeStamp() << tx.GetHash().ToString() << std::endl;
+    fnOut << createTimeStamp() << tx.GetHash().ToString() << " from " << from << std::endl;
     fnOut.close();
 }
 
