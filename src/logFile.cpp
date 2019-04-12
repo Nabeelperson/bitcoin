@@ -8,6 +8,8 @@
 
 #define UNIX_TIMESTAMP \
     std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count())
+#define UNIX_SYSTEM_TIMESTAMP \
+    std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 
 bool debug = false;
 Env env;
@@ -109,7 +111,7 @@ void AddrLoggerThread(CConnman* connman)
         std::vector<CNodeStats> vstats;
         // get stats for connected nodes
         connman->GetNodeStats(vstats);
-        std::string fileName = addrLoggerdir + UNIX_TIMESTAMP + ".txt";
+        std::string fileName = addrLoggerdir + UNIX_SYSTEM_TIMESTAMP + ".txt";
         std::ofstream fnOut(fileName, std::ofstream::out);
         // log stat for each connected node
         for (auto stat : vstats)
